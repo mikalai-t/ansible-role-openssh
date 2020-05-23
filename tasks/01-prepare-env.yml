@@ -9,12 +9,12 @@
   register: _sshd_get_version_result
   ignore_errors: yes
   changed_when: no
-  check_mode: yes
+  check_mode: no
 - name: "01.1.2 - set version variable"
   set_fact:
     openssh_version: "{{ _sshd_get_version_result.stdout if (_sshd_get_version_result.stdout is defined and _sshd_get_version_result.stdout|length > 0 and _sshd_get_version_result.stdout is match('[0-9]*\\.[0-9]')) else '0' }}"
 - debug:
-    msg: "Curretn OpenSSH detected version is [{{ openssh_version if openssh_version != '0' else 'undefined' }}]"
+    msg: "Current OpenSSH detected version is [{{ openssh_version if openssh_version != '0' else 'undefined' }}]"
 
 ###
 
