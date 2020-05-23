@@ -6,8 +6,8 @@
     src: openssh.server.conf.j2
     dest: "{{ __openssh_config_file_server }}"
     backup: yes
-    owner: 0
-    group: 0
+    owner: "0"
+    group: "0"
     mode: "0600"
     validate: "{{ __openssh_binary_file_server }} -T -f %s"
   become: True

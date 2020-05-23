@@ -8,3 +8,10 @@
 - include_tasks: 03-configure-openssh.yml
 
 - include_tasks: 04-additional-hardening.yml
+
+- name: "0.5.(service) - make sure OpenSSH server is started"
+  service:
+    name: "{{ __openssh_service }}"
+    state: started
+    enabled: yes
+  become: yes
