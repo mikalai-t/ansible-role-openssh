@@ -3,7 +3,7 @@
 
 - name: "01.1.1 - get installed openssh version"
   shell:
-    "{{ openssh_binary_file_client }} -V 2>&1 | sed -r 's/.*_([0-9]*\\.[0-9]).*/\\1/g'"
+    "{{ __openssh_binary_file_client }} -V 2>&1 | sed -r 's/.*_([0-9]*\\.[0-9]).*/\\1/g'"
   args:
     warn: no
   register: _sshd_get_version_result

@@ -11,6 +11,7 @@ __openssh_packages:
 __openssh_service: ssh
 
 __openssh_binary_file_server: /usr/sbin/sshd
+__openssh_binary_file_client: /usr/bin/ssh
 
 __openssh_config_dir: /etc/ssh
 
