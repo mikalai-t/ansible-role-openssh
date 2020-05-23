@@ -2,7 +2,7 @@
 # file: tasks/02-install_packages.yml
 
 - name: "02.1 - make sure the latest version of required packages are installed"
-  package:
+  apt:
     name: "{{ __openssh_packages|select()|list }}"
     state: latest
   become: True
