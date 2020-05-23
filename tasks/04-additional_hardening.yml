@@ -1,0 +1,22 @@
+---
+# file: tasks/04-additional_hardening.yml
+
+- name: "04.1.1 - check if '/etc/ssh/moduli' contains weak DH parameters"
+  shell:
+    "awk '$5 < {{ openssh_server_moduli_min_length }}' /etc/ssh/moduli"
+  become: True
+  register: moduli_weak_dh_check
+  changed_when: False
+  check_mode: False
+- name: "04.1.2 - remove all small primes"
+  shell:
+    "awk '$5 >= {{ openssh_server_moduli_min_length }}' /etc/ssh/moduli > /etc/ssh/moduli.new ;
+     [ -r /etc/ssh/moduli.new -a -s /etc/ssh/moduli.new ] && mv /etc/ssh/moduli.new /etc/ssh/moduli || true"
+  become: True
+  notify:
+    - restart-openssh-server
+  when:
+    - moduli_weak_dh_check.stdout is defined and
+      moduli_weak_dh_check.stdout|length > 0
+
+- meta: flush_handlers

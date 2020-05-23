@@ -1,0 +1,10 @@
+---
+# file: tasks/main.yml
+
+- include_tasks: 01-prepare_env.yml
+
+- include_tasks: 02-install_packages.yml
+
+- include_tasks: 03-configure_openssh.yml
+
+- include_tasks: 04-additional_hardening.yml

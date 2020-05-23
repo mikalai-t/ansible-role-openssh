@@ -1,0 +1,212 @@
+---
+# file: defaults/main.yml
+
+# If 'false' - only 'inet' family will be allowed, set to 'true' if IPv6 is needed
+openssh_network_ipv6_enabled: no
+
+openssh_server_moduli_min_length: 2048
+
+# Initially empty, but will be filled with varialbes below during the play depending on OpenSSH version.
+openssh_common_ciphers_list: []
+openssh_ciphers_53_default:
+  - aes256-ctr
+  - aes192-ctr
+  - aes128-ctr
+openssh_ciphers_53_weak: "{{ openssh_ciphers_53_default + ['aes256-cbc', 'aes192-cbc', 'aes128-cbc'] }}"
+openssh_ciphers_66_default:
+  - chacha20-poly1305@openssh.com
+  - aes256-gcm@openssh.com
+  - aes128-gcm@openssh.com
+  - aes256-ctr
+  - aes192-ctr
+  - aes128-ctr
+openssh_ciphers_66_weak: "{{ openssh_ciphers_66_default + ['aes256-cbc', 'aes192-cbc', 'aes128-cbc'] }}"
+
+# Initially empty, but will be filled with varialbes below during the play depending on OpenSSH version.
+openssh_common_macs_list: []
+openssh_macs_53_default:
+  - hmac-ripemd160
+  - hmac-sha1
+openssh_macs_59_default:
+  - hmac-sha2-512
+  - hmac-sha2-256
+  - hmac-ripemd160
+openssh_macs_59_weak: "{{ openssh_macs_59_default + ['hmac-sha1'] }}"
+openssh_macs_66_default:
+  - hmac-sha2-512-etm@openssh.com
+  - hmac-sha2-256-etm@openssh.com
+  - umac-128-etm@openssh.com
+  - hmac-sha2-512
+  - hmac-sha2-256
+openssh_macs_66_weak: "{{ openssh_macs_66_default + ['hmac-sha1'] }}"
+openssh_macs_76_default:
+  - hmac-sha2-512-etm@openssh.com
+  - hmac-sha2-256-etm@openssh.com
+  - umac-128-etm@openssh.com
+  - hmac-sha2-512
+  - hmac-sha2-256
+
+# Initially empty, but will be filled with varialbes below during the play depending on OpenSSH version.
+openssh_common_kex_list: []
+openssh_kex_59_default:
+  - diffie-hellman-group-exchange-sha256
+openssh_kex_59_weak: "{{ openssh_kex_59_default + ['diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha1', 'diffie-hellman-group1-sha1'] }}"
+openssh_kex_66_default:
+  - curve25519-sha256@libssh.org
+  - diffie-hellman-group-exchange-sha256
+openssh_kex_66_weak: "{{ openssh_kex_66_default + ['diffie-hellman-group14-sha1', 'diffie-hellman-group-exchange-sha1', 'diffie-hellman-group1-sha1'] }}"
+
+
+# -----------------------------
+# "Basic configuration" section
+# -----------------------------
+# Ports to which ssh-server should listen to
+openssh_server_ports_list: ['22']
+# One or more ip addresses, to which ssh-server should listen to. Default is empty, but should be configured for
+# security reasons!
+openssh_server_listen_interfaces_list: ['0.0.0.0']
+# Host keys to look for when starting sshd. Initially empty, but will be filled depending on OpenSSH version.
+openssh_server_host_key_files_list: []
+#
+openssh_server_syslog_facility: AUTH
+#
+openssl_server_loglevel: INFO
+
+
+# --------------------------------
+# "Security configuration" section
+# --------------------------------
+# "Cryptography" subsection
+# -------------------------
+# If your clients don't support CTR (eg older versions), cbc will be added. CBC: is true if you want to connect with
+# OpenSSL-base libraries e.g. ruby Net::SSH::Transport::CipherFactory requires cbc-versions of the given openssh
+# ciphers to work see: http://net-ssh.github.com/net-ssh/classes/Net/SSH/Transport/CipherFactory.html
+openssh_server_weak_ciphers_configured: no
+# Set to "True" if weaker HMAC mechanisms are required. This is usually only necessary, if older M2M mechanism need to
+# communicate with SSH, that don't have any of the configured secure HMACs enabled.
+openssh_server_weak_hmac_configured: no
+# Set to "true" if weaker Key-Exchange (KEX) mechanisms are required. This is usually only necessary, if older M2M
+# mechanism need to communicate with SSH, that don't have any of the configured secure KEXs enabled.
+openssh_server_weak_kex_configured: no
+
+# ---------------------------
+# "Authentication" subsection
+# ---------------------------
+# Disable root login altogether. Set to "True" to allow root to login via key-based mechanism.
+openssh_server_root_login_allowed: no
+# Ability to override default value
+openssh_server_permit_root_login: ""
+# An appropriate method will be used to separate priveleges ("UsePrivilegeSeparation" parameter) depending on OS
+# and OpenSSH server version
+openssh_server_privilege_separation: "sandbox"
+
+# Specifies  the  maximum  number  of authentication attempts permitted per connection. Once the number of failures
+# reaches half this value, additional failures are logged.
+openssh_server_max_auth_retries: 5
+# Set this to "true" to enable PAM authentication, account processing, and session processing. If this is enabled,
+# PAM authentication will be allowed through the "ChallengeResponseAuthentication" and "PasswordAuthentication".
+# Depending on your PAM configuration, PAM authentication via "ChallengeResponseAuthentication" may even bypass the
+# setting of "PermitRootLogin without-password". If you just want the "PAM" account and session checks to run without
+# PAM authentication, then enable this but set "PasswordAuthentication" and "ChallengeResponseAuthentication" to "no".
+openssh_server_use_pam_allowed: yes
+#
+openssh_server_challenge_response_auth_allowed: yes
+#
+openssh_server_keyboard_interactive_auth_allowed: yes
+#
+openssh_server_kerberos_auth_allowed: no
+#
+openssh_server_gssapi_auth_allowed: no
+
+# If specified, login is disallowed for user names that match one of the patterns. Example:
+# openssh_server_deny_users: "foo bar"
+openssh_server_deny_users: ""
+# If specified, login is disallowed for users whose primary group or supplementary group list matches one of the
+# patterns. Example:
+# openssh_server_deny_groups: "foo bar"
+openssh_server_deny_groups: ""
+
+# If specified, login is allowed ONLY for user names that match one of the patterns. Example:
+# openssh_server_allow_users: "root kitchen vagrant"
+openssh_server_allow_users: ""
+# If specified, login is allowed ONLY for users whose primary group or supplementary group list matches one of the
+# patterns. Example:
+# openssh_server_allow_groups: "root kitchen vagrant"
+openssh_server_allow_groups: ""
+
+# --------------------
+# "Network" subsection
+# --------------------
+# Specifies the parameters for using "ClientAlive" messages which sends via encrypted channel
+openssh_server_client_alive_interval: 60
+openssh_server_client_alive_count: 3
+# Allow SSH Tunnels?
+openssh_server_permit_tunnel: no
+# Allow "TCP Forwarding"?
+openssh_server_tcp_forwarding_allowed: no
+# Set to "true" to allow "Agent Forwarding".
+openssh_server_agent_forwarding_allowed: no
+# When "False" binding forwarded ports to non-loopback addresses is disabled. Set to true to force binding on wildcard
+# address. Set to "clientspecified" to allow the client to specify which address to bind to.
+openssh_server_gateway_ports: no
+#
+openssh_server_x11_forwarding_allowed: no
+
+
+# ----------------------------------------
+# "User environment configuration" section
+# ----------------------------------------
+# If not "False" it can be a list of environment variables allowed to be passed from client to the server. Example:
+# openssh_server_env_vars_allowed: ['PWD','HTTP_PROXY']
+openssh_server_env_vars_allowed: no
+
+
+# ----------------------------
+# "Misc.configuration" section
+# ----------------------------
+# Set to "True" or value if compression is needed
+openssh_server_compression_enabled: no
+# Set to "True" if DNS resolutions are needed, look up the remote host name, defaults to false from 6.8, see:
+#   * http://www.openssh.com/txt/release-6.8
+openssh_server_use_dns_allowed: no
+# Enable(True)/disable(False) printing of the MOTD
+openssh_server_print_motd: yes
+# Enable(True)/disable(False) display of last login information
+openssh_server_print_last_log: yes
+# Enable(True)/disable(False) serving "/etc/ssh/banner.txt" before authentication is allowed
+openssh_server_banner_allowed: no
+# Enable(True)/disable(False) distribution version leakage during initial protocol handshake
+openssh_server_print_debian_banner: no
+
+# Enable(True)/disable(False) SFTP configuration
+openssh_server_sftp_enabled: yes
+# Restrict SFTP connection abd access within "chroot" env only for specified user's group
+openssh_server_sftp_match_condition: ""
+# Default SFTP chroot location
+openssh_server_sftp_chroot_dir: /home/%u
+# List of hashes describing sub-directory inside chroot location
+# openssh_server_sftp_chroot_sub_dirs_list:
+#   - name: income
+#     owner: user
+#     group: usergroup
+#     mode: '0700'
+openssh_server_sftp_chroot_sub_dirs_list: []
+
+# List of dict (containing group and rules) to generate Match Group blocks for. Example:
+# openssh_server_match_group_list:
+#   - group: 'root'
+#     rules: ['AllowTcpForwarding yes']
+openssh_server_match_group_list: []
+
+# List of dict (containing user and rules) to generate Match User blocks for. Example:
+# openssh_server_match_user_list:
+#   - user: 'root'
+#     rules: ['AllowTcpForwarding yes']
+openssh_server_match_user_list: []
+
+# List of dict (containing source ip address and rules) to generate Match Address blocks for. Example:
+# openssh_server_match_address_list:
+#   - addr: 192.168.1.1
+#     rules: ['AllowTcpForwarding yes', 'PermitRootLogin without-password']
+openssh_server_match_address_list: []
+#=======================================================================================================================

@@ -1,0 +1,176 @@
+---
+# file: tasks/01-prepare_env.yml
+
+- name: "01.1.1 - get installed openssh version"
+  shell:
+    "{{ openssh_binary_file_client }} -V 2>&1 | sed -r 's/.*_([0-9]*\\.[0-9]).*/\\1/g'"
+  args:
+    warn: no
+  register: _sshd_get_version_result
+  ignore_errors: yes
+  changed_when: no
+  check_mode: yes
+- name: "01.1.2 - set version variable"
+  set_fact:
+    openssh_version: "{{ _sshd_get_version_result.stdout if (_sshd_get_version_result.stdout is defined and _sshd_get_version_result.stdout|length > 0 and _sshd_get_version_result.stdout is match('[0-9]*\\.[0-9]')) else '0' }}"
+- debug:
+    msg: "Curretn OpenSSH detected version is [{{ openssh_version if openssh_version != '0' else 'undefined' }}]"
+
+###
+
+- name: "01.2.1 - set hostkeys variable for openssh version >= 6.3"
+  set_fact:
+    openssh_server_host_key_files_list: ['/etc/ssh/ssh_host_rsa_key', '/etc/ssh/ssh_host_ecdsa_key', '/etc/ssh/ssh_host_ed25519_key']
+  when:
+    - openssh_version is version_compare('6.3','>=') and
+      openssh_server_host_key_files_list|length == 0
+
+- name: "01.2.2 - set hostkeys variable for openssh version >= 6.0"
+  set_fact:
+    openssh_server_host_key_files_list: ['/etc/ssh/ssh_host_rsa_key', '/etc/ssh/ssh_host_ecdsa_key']
+  when:
+    - openssh_version is version_compare('6.0','>=') and
+      openssh_server_host_key_files_list|length == 0
+
+- name: "01.2.3 - set hostkeys variable for openssh version >= 5.3"
+  set_fact:
+    openssh_server_host_key_files_list: ['/etc/ssh/ssh_host_rsa_key']
+  when:
+    - openssh_version is version_compare('5.3','>=') and
+      openssh_server_host_key_files_list|length == 0
+
+### *** Ciphers ***
+
+- name: "01.3.1.1 - set weak ciphers for openssh version >= 6.6"
+  set_fact:
+    openssh_common_ciphers_list: "{{ openssh_ciphers_66_weak }}"
+  when:
+    - openssh_version is version_compare('6.6','>=') and
+      openssh_server_weak_ciphers_configured|bool and
+      openssh_common_ciphers_list|length == 0
+- name: "01.3.1.2 - set ciphers for openssh version >= 6.6"
+  set_fact:
+    openssh_common_ciphers_list: "{{ openssh_ciphers_66_default }}"
+  when:
+    - openssh_version is version_compare('6.6','>=') and
+      openssh_common_ciphers_list|length == 0
+
+- name: "01.3.2.1 - set weak ciphers for openssh version >= 5.3"
+  set_fact:
+    openssh_common_ciphers_list: "{{ openssh_ciphers_53_weak }}"
+  when:
+    - openssh_version is version_compare('5.3','>=') and
+      openssh_server_weak_ciphers_configured|bool and
+      openssh_common_ciphers_list|length == 0
+- name: "01.3.2.2 - set ciphers for openssh version >= 5.3"
+  set_fact:
+    openssh_common_ciphers_list: "{{ openssh_ciphers_53_default }}"
+  when:
+    - openssh_version is version_compare('5.3','>=') and
+      openssh_common_ciphers_list|length == 0
+
+### *** Hash algorithms ***
+
+- name: "01.4.1 - set macs for openssh version >= 7.6"
+  set_fact:
+    openssh_common_macs_list: "{{ openssh_macs_76_default }}"
+  when:
+    - openssh_version is version_compare('7.6','>=') and
+      openssh_common_macs_list|length == 0
+
+- name: "01.4.2.1 - set weak macs for openssh version >= 6.6"
+  set_fact:
+    openssh_common_macs_list: "{{ openssh_macs_66_weak }}"
+  when:
+    - openssh_version is version_compare('6.6','>=') and
+      openssh_server_weak_hmac_configured|bool and
+      openssh_common_macs_list|length == 0
+- name: "01.4.2.2 - set macs for openssh version >= 6.6"
+  set_fact:
+    openssh_common_macs_list: "{{ openssh_macs_66_default }}"
+  when:
+    - openssh_version is version_compare('6.6','>=') and
+      openssh_common_macs_list|length == 0
+
+- name: "01.4.3.1 - set weak macs for openssh version >= 5.9"
+  set_fact:
+    openssh_common_macs_list: "{{ openssh_macs_59_weak }}"
+  when:
+    - openssh_version is version_compare('5.9','>=') and
+      openssh_server_weak_hmac_configured|bool and
+      openssh_common_macs_list|length == 0
+- name: "01.4.3.2 - set macs for openssh version >= 5.9"
+  set_fact:
+    openssh_common_macs_list: "{{ openssh_macs_59_default }}"
+  when:
+    - openssh_version is version_compare('5.9','>=') and
+      openssh_common_macs_list|length == 0
+
+- name: "01.4.4 - set macs for openssh version >= 5.3"
+  set_fact:
+    openssh_common_macs_list: "{{ openssh_macs_53_default }}"
+  when:
+    - openssh_version is version_compare('5.3','>=') and
+      openssh_common_macs_list|length == 0
+
+### *** Key Exchange Algorithms (KEX) ***
+
+- name: "01.5.1.1 - set weak kex for openssh version >= 6.6"
+  set_fact:
+    openssh_common_kex_list: "{{ openssh_kex_66_weak }}"
+  when:
+    - openssh_version is version_compare('6.6','>=') and
+      openssh_server_weak_kex_configured|bool and
+      openssh_common_kex_list|length == 0
+- name: "01.5.1.2 - set kex for openssh version >= 6.6"
+  set_fact:
+    openssh_common_kex_list: "{{ openssh_kex_66_default }}"
+  when:
+    - openssh_version is version_compare('6.6','>=') and
+      openssh_common_kex_list|length == 0
+
+- name: "01.5.2.1 - set weak kex for openssh version >= 5.9"
+  set_fact:
+    openssh_common_kex_list: "{{ openssh_kex_59_weak }}"
+  when:
+    - openssh_version is version_compare('5.9','>=') and
+      openssh_server_weak_kex_configured|bool and
+      openssh_common_kex_list|length == 0
+- name: "01.5.2.2 - set kex for openssh version >= 6.6"
+  set_fact:
+    openssh_common_kex_list: "{{ openssh_kex_59_default }}"
+  when:
+    - openssh_version is version_compare('5.9','>=') and
+      openssh_common_kex_list|length == 0
+
+- block:
+  - name: "01.6.1 - make sure chroot dir for sftp is present with strict ownership/permissions"
+    file:
+      path: "{{ openssh_server_sftp_chroot_dir }}"
+      state: directory
+      owner: 0
+      group: 0
+      mode: "u=rwX,go=rX"
+      recurse: False
+    become: True
+
+  - name: "01.6.2 - create sub-directory inside chroot"
+    file:
+      path: "{{ openssh_server_sftp_chroot_dir }}/{{ item['name'] }}"
+      state: directory
+      owner: "{{ item['owner']|default('0')|string }}"
+      group: "{{ item['group']|default('0')|string }}"
+      mode: "{{ item['mode']|default('ug=rwX,o=rX')|string }}"
+      recurse: False
+    become: True
+    when:
+      - item['name'] is defined and
+        item['name']|string|length > 0
+    with_items:
+      - "{{ openssh_server_sftp_chroot_sub_dirs_list }}"
+  # block condition
+  when:
+    - openssh_server_sftp_enabled|bool
+    - openssh_server_sftp_match_condition|string|length > 0
+    - openssh_server_sftp_chroot_dir|string|length > 0
+    - not '%' in openssh_server_sftp_chroot_dir|string

@@ -1,0 +1,16 @@
+---
+# file: tasks/02-install_packages.yml
+
+- name: "02.1 - make sure the latest version of required packages are installed"
+  package:
+    name: "{{ __openssh_packages|select()|list }}"
+    state: latest
+  become: True
+
+- name: "02.2 - make sure ssh host keys are created"
+  command:
+    "ssh-keygen -A"
+  become: True
+  changed_when: False
+  when:
+    - not (ansible_os_family|lower == 'redhat' and ansible_distribution_major_version is version_compare('7','<'))
