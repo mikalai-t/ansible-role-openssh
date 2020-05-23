@@ -246,11 +246,6 @@ Banner                  {{ '/etc/ssh/banner.txt' if openssh_server_banner_allowe
 DebianBanner            {{ 'yes' if openssh_server_print_debian_banner|bool else 'no' }}
 {% endif %}
 
-{% if openssh_server_revoked_keys_list|length > 0 %}
-# Reject keys that are explicitly blacklisted
-RevokedKeys             {{ openssh_config_file_revoked_keys|string }}
-{% endif %}
-
 
 {% if openssh_server_sftp_enabled|bool %}
 ### ===========================
