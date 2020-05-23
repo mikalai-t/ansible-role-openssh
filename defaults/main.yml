@@ -112,7 +112,7 @@ openssh_server_use_pam_allowed: yes
 #
 openssh_server_challenge_response_auth_allowed: yes
 #
-openssh_server_keyboard_interactive_auth_allowed: yes
+openssh_server_keyboard_interactive_auth_allowed: no
 #
 openssh_server_kerberos_auth_allowed: no
 #

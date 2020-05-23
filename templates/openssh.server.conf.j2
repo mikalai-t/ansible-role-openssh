@@ -167,14 +167,6 @@ DenyGroups      {{ openssh_server_deny_groups|string }}
 AllowGroups     {{ openssh_server_allow_groups|string }}
 {% endif %}
 
-{% if openssh_server_authorized_keys_file|string|length > 0 %}
-AuthorizedKeysFile          {{ openssh_server_authorized_keys_file|string }}
-{% endif %}
-{% if openssh_server_authorized_keys_command|string|length > 0 %}
-AuthorizedKeysCommand       {{ openssh_server_authorized_keys_command|string }}
-AuthorizedKeysCommandUser   {{ openssh_server_authorized_keys_command_user|string }}
-{% endif %}
-
 
 ### -------
 ### Network
