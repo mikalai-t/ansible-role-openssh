@@ -1,7 +1,7 @@
 ---
 # file: tasks/03-configure_openssh.yml
 
-- name: "03.2 - template openssh server config [{{ __openssh_config_file_server }}:{{ __openssh_config_file_owner }}/{{ openssh_config_file_group }}:{{ openssh_config_file_mode_server }}]"
+- name: "03.2 - template openssh server config"
   template:
     src: openssh.server.conf.j2
     dest: "{{ __openssh_config_file_server }}"
